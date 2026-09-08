@@ -39,7 +39,7 @@ const LoginPage = ({ onLoginSuccess }) => {
             <div className="inline-flex items-center justify-center p-3.5 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl shadow-lg shadow-indigo-500/30 mb-4 animate-bounce">
               <Sparkles className="text-white h-7 w-7" />
             </div>
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">
+            <h2 className="text-3xl font-extrabold text-sky-400 tracking-tight">
               Sri Sai Lorven Clinic
             </h2>
             <p className="text-indigo-200/60 mt-2 text-sm font-medium">

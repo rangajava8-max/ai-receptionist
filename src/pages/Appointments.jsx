@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
-import { Calendar, Clock, User, Sparkles, Activity, Download } from 'lucide-react';
+import { Calendar, Clock, User, Sparkles, Activity, Download, Stethoscope } from 'lucide-react';
 
 const statusStyles = {
   booked:    'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm',
@@ -11,6 +11,7 @@ const statusStyles = {
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
+  const [doctorsMap, setDoctorsMap] = useState({});
   const [loading, setLoading] = useState(true);
 
   const handleCancel = async (apptId) => {
@@ -36,6 +37,7 @@ const Appointments = () => {
       'Appointment ID',
       'Patient Name',
       'Phone Number',
+      'Doctor',
       'Appointment Date',
       'Appointment Time',
       'Reason for Visit',
@@ -47,11 +49,13 @@ const Appointments = () => {
       const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const patientName = `${appt.patient?.first_name || ''} ${appt.patient?.last_name || ''}`.trim();
+      const doctorName = appt.doctor?.name || doctorsMap[appt.doctor_id] || (appt.doctor_id ? `Doctor (${appt.doctor_id})` : 'Unassigned');
       
       return [
         `"${appt.id || ''}"`,
         `"${patientName.replace(/"/g, '""')}"`,
         `"${(appt.patient?.phone || '').replace(/"/g, '""')}"`,
+        `"${doctorName.replace(/"/g, '""')}"`,
         `"${dateStr}"`,
         `"${timeStr}"`,
         `"${(appt.reason || '').replace(/"/g, '""')}"`,
@@ -73,32 +77,46 @@ const Appointments = () => {
   };
 
   useEffect(() => {
-    const fetchAppts = async () => {
+    const fetchData = async () => {
       try {
-        const { data } = await client.get('/appointments');
-        const allAppts = data.appointments || [];
-        
-        // Filter: Only show appointments from today onwards (using LOCAL time, not UTC)
-        const now = new Date();
-        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-        
-        const filtered = allAppts.filter(appt => {
-          // Extract date string directly from the appointment (already in local IST)
-          const apptDateStr = appt.requested_datetime.split('T')[0];
-          return apptDateStr >= todayStr;
-        });
-        
-        // Sort chronologically
-        filtered.sort((a, b) => new Date(a.requested_datetime) - new Date(b.requested_datetime));
-        
-        setAppointments(filtered);
+        const [apptRes, docRes] = await Promise.allSettled([
+          client.get('/appointments'),
+          client.get('/doctors')
+        ]);
+
+        let docMap = {};
+        if (docRes.status === 'fulfilled' && docRes.value.data?.doctors) {
+          docRes.value.data.doctors.forEach(d => {
+            docMap[d.id] = d.name;
+          });
+        }
+        setDoctorsMap(docMap);
+
+        if (apptRes.status === 'fulfilled') {
+          const allAppts = apptRes.value.data.appointments || [];
+          
+          // Filter: Only show appointments from today onwards (using LOCAL time, not UTC)
+          const now = new Date();
+          const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+          
+          const filtered = allAppts.filter(appt => {
+            // Extract date string directly from the appointment (already in local IST)
+            const apptDateStr = appt.requested_datetime.split('T')[0];
+            return apptDateStr >= todayStr;
+          });
+          
+          // Sort chronologically
+          filtered.sort((a, b) => new Date(a.requested_datetime) - new Date(b.requested_datetime));
+          
+          setAppointments(filtered);
+        }
       } catch (err) { 
         console.error('Failed to fetch appointments:', err); 
       } finally { 
         setLoading(false); 
       }
     };
-    fetchAppts();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -115,8 +133,8 @@ const Appointments = () => {
       {/* Premium Header */}
       <div className="flex justify-between items-end mb-8">
         <div>
-          <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-600 tracking-tight flex items-center gap-3">
-            <Sparkles className="text-indigo-500" size={28} />
+          <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-600 tracking-tight flex items-center gap-3">
+            <Sparkles className="text-indigo-500" size={24} />
             Upcoming Appointments
           </h2>
           <p className="text-gray-500 mt-2 font-medium text-sm">Review scheduled visits from today onwards</p>
@@ -148,6 +166,7 @@ const Appointments = () => {
             <thead className="bg-gradient-to-r from-gray-50/90 to-white/90 border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4 text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.2em]">Patient Details</th>
+                <th className="px-6 py-4 text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.2em]">Doctor</th>
                 <th className="px-6 py-4 text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.2em]">Schedule</th>
                 <th className="px-6 py-4 text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.2em]">Reason for Visit</th>
                 <th className="px-6 py-4 text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.2em]">Status</th>
@@ -160,6 +179,7 @@ const Appointments = () => {
                 const localNow = new Date();
                 const todayLocal = `${localNow.getFullYear()}-${String(localNow.getMonth()+1).padStart(2,'0')}-${String(localNow.getDate()).padStart(2,'0')}`;
                 const isToday = appt.requested_datetime.split('T')[0] === todayLocal;
+                const doctorName = appt.doctor?.name || doctorsMap[appt.doctor_id] || (appt.doctor_id ? `Doctor (${appt.doctor_id})` : 'Unassigned');
                 
                 return (
                   <tr key={appt.id} className="hover:bg-indigo-50/30 transition-all duration-200 group">
@@ -172,6 +192,12 @@ const Appointments = () => {
                           <div className="font-bold text-gray-800 tracking-tight">{appt.patient.first_name} {appt.patient.last_name}</div>
                           <div className="text-xs text-gray-400 font-medium mt-0.5">{appt.patient.phone}</div>
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50/80 border border-indigo-100 text-indigo-700 text-xs font-semibold">
+                        <Stethoscope size={13} className="text-indigo-500" />
+                        <span>{doctorName}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -212,7 +238,7 @@ const Appointments = () => {
               
               {appointments.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="px-6 py-16 text-center">
+                  <td colSpan="6" className="px-6 py-16 text-center">
                     <div className="inline-flex flex-col items-center justify-center p-6 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
                       <Calendar className="text-gray-300 mb-3" size={32} />
                       <p className="text-gray-500 font-medium tracking-wide">No upcoming appointments scheduled</p>

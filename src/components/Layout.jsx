@@ -19,7 +19,7 @@ const Layout = ({ children, onLogout }) => {
             <Building2 className="w-5 h-5 text-blue-200" />
           </div>
           <div>
-            <h1 className="text-base font-bold tracking-tight text-white leading-tight">
+            <h1 className="text-base font-bold tracking-tight text-sky-300 leading-tight">
               Sri Sai Lorven Clinic
             </h1>
             <p className="text-[0.7rem] text-blue-200/70 font-medium">AI Receptionist</p>
@@ -67,7 +67,7 @@ const Layout = ({ children, onLogout }) => {
               <Building2 size={20} />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none">
+              <h1 className="text-lg font-bold text-sky-600 tracking-tight leading-none">
                 Sri Sai Lorven Clinic
               </h1>
               <p className="text-xs text-gray-500 font-medium mt-1">Hospital Management & AI Receptionist</p>
