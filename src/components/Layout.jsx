@@ -11,7 +11,7 @@ const Layout = ({ children, onLogout }) => {
   ];
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden font-serif">
+    <div className="flex h-screen w-screen overflow-hidden font-sans">
       {/* ── Blue Sidebar ──────────────────────────────────────────────── */}
       <aside className="w-64 flex flex-col bg-[var(--color-sidebar)] text-white shrink-0">
         <div className="px-5 py-6 flex items-center gap-3 border-b border-blue-800/40">
@@ -61,21 +61,21 @@ const Layout = ({ children, onLogout }) => {
       {/* ── Main Content ──────────────────────────────────────────────── */}
       <main className="flex-1 bg-gray-50 overflow-y-auto flex flex-col">
         {/* Top Header Bar */}
-        <header className="bg-white border-b border-gray-200/80 px-8 py-4 flex justify-between items-center shadow-xs shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-              <Building2 size={20} />
+        <header className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shadow-xs shrink-0">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-100">
+              <Building2 size={24} />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-sky-600 tracking-tight leading-none">
+              <h1 className="text-2xl font-black text-sky-600 tracking-tight leading-tight">
                 Sri Sai Lorven Clinic
               </h1>
-              <p className="text-xs text-gray-500 font-medium mt-1">Hospital Management & AI Receptionist</p>
+              <p className="text-sm text-gray-600 font-semibold mt-0.5">Hospital Management & AI Receptionist</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/90 shadow-xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Live System Active
             </div>
           </div>
